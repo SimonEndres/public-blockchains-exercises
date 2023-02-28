@@ -39,8 +39,8 @@
 // be executed, until you tell the process to stop. 
 
 // This line will tell the process to stop.
-process.exit(0);
-console.log('I am sad line...I will not be printed to console :(');
+// console.log('I am sad line...I will not be printed to console :(');
+// process.exit(0);
 
 // a. Move the sad line above and below `process.exit(0);` to check that the
 // process stops where it is intended to. When you are done, comment out both
@@ -57,6 +57,11 @@ let exercise = 0;
 
 // Your code here!
 
+function exit() {
+    console.log('exercise %d terminated', exercise);
+    process.exit(0);
+}
+
 // c. Bonus. Did you realize that JavaScript/Node.JS has three different ways
 // of declaring a function?
 
@@ -72,6 +77,16 @@ let exercise = 0;
 // for all three functions? 
 
 // Your code here!
+
+const exit2 = function () {
+    console.log("Exercise &d terminated", exercise);
+    process.exit(0);
+};
+
+const exit3 = () => {
+    console.log("Exercise &d terminated", exercise);
+    process.exit(0);
+};
 
 
 // Exercise 1. NPM Warm Up.
@@ -111,9 +126,9 @@ exercise = 2;
 
 // Create a .env file with the necessary information.
 // Hint: you can copy .env_sample, modify its content and save it as .env.
- 
+
 // See if it worked.
-console.log(process.env);
+// console.log(process.env);
 
 // exit();
 
@@ -130,7 +145,11 @@ exercise = '3a';
 // Hint: https://javascript.info/ifelse
 
 // Your code here!
-
+// if (process.env.METAMASK_ACCOUNT_1 == "") {
+//     console.log("Address of account 1 is empty.");
+// } else {
+//     console.log("Everything is fine.");
+// }
 // exit();
 
 // b. Create an array with all the names of the variables written in the .env
@@ -140,6 +159,16 @@ exercise = '3a';
 exercise = '3b';
 
 // Your code here!
+
+let variablesToCheck = [
+    "INFURA_KEY", "INFURA_GOERLI_API_URL", "INFURA_MAINNET_API_URL",
+    "ALCHEMY_KEY", "ALCHEMY_GOERLI_API_URL", "ALCHEMY_MAINNET_API_URL",
+    "METAMASK_1_ADDRESS", "METAMASK_1_PRIVATE_KEY",
+    "METAMASK_2_ADDRESS", "METAMASK_2_PRIVATE_KEY",
+    "ETHERSCAN_KEY"
+];
+
+console.log('Num of variables in .env to check: ', variablesToCheck.length);
 
 // exit();
 
@@ -153,7 +182,10 @@ exercise = '3b';
 
 // Solution 1. forEach.
 variablesToCheck.forEach(v => {
-    // Your code here!
+    if (!process.env[v]) {
+        console.log(process.env[v])
+        console.log(`Missing ${v}, fix your .env file`);
+    }
 });
 
 // Solution 2. For-loop.
@@ -174,6 +206,11 @@ const ethers = require("ethers");
 // and the mnenomic phrase.
 // Hint: ethers.Wallet.createRandom();
 
+const wallet = ethers.Wallet.createRandom();
+
+console.log("Address: " + wallet.address);
+console.log("Private Key: " + wallet.privateKey);
+console.log("Mnemonic: " + wallet.mnemonic.phrase);
 
 // exit();
 
@@ -184,7 +221,7 @@ exercise = '4b';
 
 let baseDevPath = "m/44'/60'/0'/0/";
 
-// Wait is the derication path? 
+// What is the derivation path? 
 // Basically, the mnemonic alone isn't enough to determine an address
 // and you need this extra bit of information. You may learn more here:
 // https://www.youtube.com/watch?v=tPCN3nDVzZI
@@ -196,6 +233,7 @@ console.log("Derivation path:", wallet.path);
 
 // Your code here!
 
+console.log(baseDevPath === wallet.path)
 
 // exit();
 

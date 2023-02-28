@@ -2,7 +2,7 @@
 ////////////////////////
 
 // A Provider is a read-only connection to the blockchain, which allows
-// querying the blockchain state, such as accout, block or transaction
+// querying the blockchain state, such as account, block or transaction
 // details, querying event logs or evaluating read-only code using call.
 
 // See: https://docs.ethers.org/v6/getting-started/
@@ -14,6 +14,8 @@
 
 // Your code here!
 
+require('dotenv').config();
+const ethers = require("ethers");
 
 // Exercise 1. Connect to Mainnet (a.k.a welcome async!).
 /////////////////////////////////////////////////////////
@@ -43,7 +45,9 @@
 
 
 // Your code here!
-
+const providerKey = process.env.INFURA_KEY;
+const mainnetInfuraUrl = `${process.env.INFURA_MAINNET_API_URL}${providerKey}`;
+const mainnetProvider = new ethers.JsonRpcProvider(mainnetInfuraUrl);
 
 // b. Verify that the network's name is "mainnet" and the chain id that theis 1.
 
@@ -59,16 +63,20 @@
 
 // This is an asynchronous anonymous self-executing function. It is a ugly
 // construct, but it allows you to use await inside its body.
-(async () => {
+// (async () => {
     
-    // Your code maybe here!
+//     let net = await mainnetProvider.getNetwork();
+//     console.log("Network name is " + net.name);
+//     console.log("Network chain ID is " + Number(net.chainId));
 
-})();
+// })();
 
 // However, the async function could also be named, and the result is:
 const network = async () => {
     
-    // Your code here!
+    let net = await mainnetProvider.getNetwork();
+    console.log("Network name is " + net.name);
+    console.log("Network chain ID is " + Number(net.chainId));
 
 };
 
@@ -83,7 +91,7 @@ const network = async () => {
 
 // Promises.
 
-// Checkpoint. We use `return` to terminate the execution insted
+// Checkpoint. We use `return` to terminate the execution instead
 // of process.exit(). Why?
 // return;
 
@@ -98,7 +106,8 @@ const network = async () => {
 // // Look up the current block number
 const blockNum = async () => {
     
-    // Your code here!
+    let blockNumber = await mainnetProvider.getBlockNumber();
+    console.log("Latest Block number: " + blockNumber);
 
 };
 
@@ -112,9 +121,16 @@ const blockNum = async () => {
 // Connect to the Goerli test net, get the latest block number and print
 // the difference in chain length with mainnet.
 
+const goerliNetUrl = `${process.env.INFURA_GOERLI_API_URL}${providerKey}`;
+const goerliProvider = new ethers.JsonRpcProvider(goerliNetUrl);
 
 // Look up the current block number in Mainnet and Goerli.
 const blockDiff = async () => {
+
+    let goerliBlockNumber = await goerliProvider.getBlockNumber();
+    let mainnetBlockNumber = await mainnetProvider.getBlockNumber();
+    console.log(`Block number of mainnet ${mainnetBlockNumber} and goerli ${goerliBlockNumber}`);
+    console.log("Difference is: " + (mainnetBlockNumber - goerliBlockNumber));
 
 };
 
@@ -218,7 +234,19 @@ const checkBlockTime2 = async (providerName = "mainnet", blocks2check = 3) => {
 
 const blockInfo = async () => {
     
-    // Your code here!
+    let blockNum = await mainnetProvider.getBlockNumber();
+    let lastBlock = await mainnetProvider.getBlock(blockNum);
+    console.log('Last block in mainnet: ' + lastBlock);
+
+    let tx = await lastBlock.getTransaction(0);
+    console.log(tx);
+    let txHash = lastBlock.transactions[0];
+
+    let txReceipt = await mainnetProvider.getTransactionReceipt(txHash);
+    console.log(txReceipt);
+
+    // lastBlock = await mainnetProvider.getBlock(blockNum, true);
+    // console.log(lastBlock.prefetchedTransactions);
 
 };
 
@@ -232,7 +260,11 @@ const blockInfo = async () => {
 
 const ens = async () => {
     
-    // Your code here!
+    let unimaAddress = await goerliProvider.resolveName('unima.eth');
+    console.log(unimaAddress);
+
+    let ensName = await goerliProvider.lookupAddress(unimaAddress);
+    console.log(ensName);
 
 };
 
@@ -256,9 +288,16 @@ const ens = async () => {
 
 const balance = async (ensName = "unima.eth") => {
 
-   // Your code here!
+   let balance1 = await goerliProvider.getBalance(ensName);
+   console.log(`Account ${ensName} has balance ${ethers.formatEther(balance1)}`);
+
+   let address = await goerliProvider.resolveName(ensName);
+   let balance2 = await goerliProvider.getBalance(address);
+   console.log(`Account ${address} has balance ${ethers.formatEther(balance2)}`);
 
 };
+
+// balance();
 
 // balance("vitalik.eth");
 
@@ -291,10 +330,12 @@ const linkABI = require('./link_abi.json');
 
 const link = async () => {
    
-    // Your code here!
+    const contract = new ethers.Contract(linkAddress, linkABI, goerliProvider);
+    const balance = await contract.balanceOf("unima.eth");
+    console.log(ethers.formatEther(balance));
 };
 
 
-// link();
+link();
 
 
