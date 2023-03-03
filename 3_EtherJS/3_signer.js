@@ -20,10 +20,15 @@
 // Hint: As you did in file 1_wallet and 2_provider.
 
 // Your code here!
+require('dotenv').config();
+const ethers = require('ethers');
 
 // b. Create a Goerli provider.
 
 // Your code here!
+const providerKey = process.env.INFURA_KEY;
+const goerliNet = `${process.env.INFURA_GOERLI_API_URL}${providerKey}`;
+const goerliProvider = new ethers.JsonRpcProvider(goerliNet);
 
 // Exercise 1. Create a Signer.
 ///////////////////////////////
@@ -41,12 +46,17 @@
 
 // Your code here!
 
+const privateKey = process.env.METAMASK_1_PRIVATE_KEY;
+let signer = new ethers.Wallet(privateKey);
+// console.log(signer.address);
+
 // Exercise 2. Sign something.
 //////////////////////////////
 
 const sign = async (message = 'Hello world') => {
     
-    // Your code here!
+    message = await signer.signMessage(message);
+    console.log(message);
 };
 
 // sign();
@@ -62,7 +72,10 @@ const sign = async (message = 'Hello world') => {
 
 const connect = async() => {
     
-    // Your code here!
+    signer = await signer.connect(goerliProvider);
+
+    let nextNonce = await signer.getNonce();
+    console.log('next nonce is: ' + nextNonce);
 };
 
 // connect();
@@ -75,7 +88,7 @@ const connect = async() => {
 
 // Replace the signer created above.
 
-
+signer = new ethers.Wallet(privateKey, goerliProvider);
 
 // Exercise 4. Send a transaction.
 //////////////////////////////////
@@ -98,7 +111,28 @@ const account2 = process.env.METAMASK_2_ADDRESS;
 
 const sendTransaction = async () => {
 
-    // Your code here!
+    let b1 = await goerliProvider.getBalance(signer.address);
+    let b2 = await goerliProvider.getBalance(account2);
+    b1 = ethers.formatEther(b1);
+    b2 = ethers.formatEther(b2);
+
+    let tx = await signer.sendTransaction({
+        to : account2,
+        value : ethers.parseEther('0.0001')
+    });
+
+    console.log('Transaction is in the mempool');
+    await tx.wait();
+
+    console.log('Transaction minded!');
+
+    let newB1 = await goerliProvider.getBalance(signer.address);
+    let newB2 = await goerliProvider.getBalance(account2);
+    newB1 = ethers.formatEther(newB1);
+    newB2 = ethers.formatEther(newB2);
+
+    console.log(`Balance of account ${signer.address} has changed from ${b1} to ${newB1}`);
+    console.log(`Balance of account ${account2} has changed from ${b2} to ${newB2}`);
 };
 
 // sendTransaction();
