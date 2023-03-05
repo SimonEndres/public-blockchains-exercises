@@ -21,6 +21,7 @@
 
 // Your code here!
 require('dotenv').config();
+const { formatUnits } = require('ethers');
 const ethers = require('ethers');
 
 // b. Create a Goerli provider.
@@ -201,7 +202,25 @@ const sendTransaction = async () => {
 // a, b, c. 
 const checkGasPrices = async () => {
 
-    // Your code here!
+    let tx = await signer.populateTransaction({
+        to : account2,
+        value : ethers.parseEther('0.0001')
+    });
+
+    let gasLimit = formatUnits(tx.gasLimit);
+    let maxFeePerGas = formatUnits(tx.maxFeePerGas);
+    let maxPriorityFeePerGas = formatUnits(tx.maxPriorityFeePerGas);
+
+    console.log(`gasLimit = ${gasLimit}, maxFeePerGas = ${maxFeePerGas} and maxPriorityFeePerGas = ${maxPriorityFeePerGas}`);
+
+    let feeData = await goerliProvider.getFeeData();
+    let gasPrice = formatUnits(feeData.gasPrice);
+    let maxFeePerGas2 = formatUnits(feeData.maxFeePerGas);
+    let maxPriorityFeePerGas2 = formatUnits(feeData.maxPriorityFeePerGas);
+    console.log(`gasPrice = ${gasPrice}, maxFeePerGas = ${maxFeePerGas2} and maxPriorityFeePerGas = ${maxPriorityFeePerGas2}`);
+
+    let lastBlock = await goerliProvider.getBlock("latest");
+    console.log(`baseFeePerGas in last block was: ${formatUnits(lastBlock.baseFeePerGas)}`);
 
 };
 
@@ -211,7 +230,7 @@ const checkGasPrices = async () => {
 // a little cheaper in terms of gas, compared to defaults.
 // Get the suggested from `maxFeePerGas` from `getFeeData()` and then shave a
 // few gweis.
-// Hint: `maxFeePerGas` is expressed in wei, and the value you get from 
+// Hint: `maxFeePerGas` is expressed in gwei, and the value you get from 
 // `getFeeData()` is of type BigInt. To work with BigInt simply add n after
 // a normal integer number.
 // Hint2: Do you need a converter? https://eth-converter.com/
@@ -223,11 +242,26 @@ const checkGasPrices = async () => {
 // d. e.
 const sendCheaperTransaction = async () => {
 
-    // Your code here!
+    let feeData = await goerliProvider.getFeeData();
+    
+    console.log('Legacy Gas Price (GWEI)', ethers.formatUnits(feeData.gasPrice, 'gwei'));
+    console.log('Max Fee per Gas (GWEI)', ethers.formatUnits(feeData.maxFeePerGas, 'gwei'));
+    console.log('Max Priority Fee (GWEI)', ethers.formatUnits(feeData.maxPriorityFeePerGas, 'gwei'));
+
+    let tx = await signer.sendTransaction({
+        to : account2,
+        value : ethers.parseEther('0.0001'),
+        maxFeePerGas : feeData.maxFeePerGas - 500000000n
+    })
+
+    console.log('Transaction is in the mempool...');
+    let receipt = await tx.wait();
+    console.log(receipt);
+    console.log('Transaction mined!');
 
 };
 
-// sendCheaperTransaction();
+sendCheaperTransaction();
 
 
 
@@ -257,7 +291,7 @@ const sendCheaperTransaction = async () => {
 // Hint: if you don't know the nonce, `getNonce` will tell you the _next_ one.
 // Hint2: if there is a transaction in the mempool, `getNonce` will give 
 // give the current nonce (same as transaction in the mempool). Try "pending"
-// as input paramter if you need the _next_ one. 
+// as input parameter if you need the _next_ one. 
 // Hint3: if you don't know what a reasonable `maxFeePerGas` is, you can 
 // get an idea calling `getFeeData()`.
 
