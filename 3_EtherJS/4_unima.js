@@ -8,13 +8,14 @@
 // Hint: As you did multiple times now.
 
 // Your code here!
-
+require('dotenv').config();
+const ethers = require('ethers');
 
 // Exercise 1. Create a JSON RPC Provider for the (not) UniMa Blockchain.
 /////////////////////////////////////////////////////////////////////////
 
 // It seems we cannot (yet) call our blockchain the official Uni Mannheim
-// blockchain, so we will reference it throughtout the exercises as the
+// blockchain, so we will reference it throughout the exercises as the
 // (not) UniMa Blockchain.
 
 // a. Add the RPC endpoints to the .env with names:
@@ -28,6 +29,8 @@
 
 // Your code here!
 
+const notUniMaProvider = new ethers.JsonRpcProvider(process.env.NOT_UNIMA_URL_1);
+
 // Exercise 2. Let's query the provider.
 ////////////////////////////////////////
 
@@ -35,8 +38,12 @@
 // Print to console the network name, chain id, and block number of NUMA.
 
 const networkInfo = async () => {
-    
-    // Your code here!
+
+    let net = await notUniMaProvider.getNetwork();
+    console.log('NUMA info:');
+    console.log('Network name: ' + net.name);
+    console.log('Network chain id: ' + Number(net.chainId));
+    console.log('Network block number: ' + await notUniMaProvider.getBlockNumber());
 
 };
 
@@ -49,13 +56,16 @@ const networkInfo = async () => {
 // a. Use the same non-sensitive private key used in 3_signer.js.
 
 // Your code here!
+const singer = new ethers.Wallet(process.env.METAMASK_1_PRIVATE_KEY, notUniMaProvider);
+
 
 // b. Print the next nonce necessary to send a transaction.
 // Hint: .getNonce()
 
-const getNonce = async() => {
-    
-    // Your code here!
+const getNonce = async () => {
+
+    let nextNonce = await singer.getNonce();
+    console.log('nextNonce is: ' + nextNonce);
 };
 
 // getNonce();
@@ -75,11 +85,12 @@ const getNonce = async() => {
 
 const checkBalance = async () => {
 
-   // Your code here!
+    let balance = await notUniMaProvider.getBalance(process.env.METAMASK_1_ADDRESS);
+    console.log(ethers.formatEther(balance));
 
 };
 
-// checkBalance();
+checkBalance();
 
 // Exercise 5. Send a transaction.
 //////////////////////////////////
@@ -90,7 +101,16 @@ const account2 = process.env.METAMASK_2_ADDRESS;
 
 const sendTransaction = async () => {
 
-   // Your code here!
+    tx = await singer.sendTransaction({
+        to: account2,
+        value: ethers.parseEther("0.9")
+    })
+
+    console.log('Transaction in mempool');
+    await tx.wait();
+    console.log('Transaction mined');
+    console.log(tx);
+
 };
 
 // sendTransaction();
