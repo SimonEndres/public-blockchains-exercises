@@ -44,7 +44,7 @@ const notUniMaProvider = new ethers.providers.JsonRpcProvider(notUniMaUrl);
 // The deployer is the first address in the `accounts` field inside a 
 // network declaration in hardhat.config.js. 
 
-// For instance, if this the declation of the unima network:
+// For instance, if this the declaration of the unima network:
 
 // unima: {
 //     url: ...,
